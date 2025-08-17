@@ -33,6 +33,8 @@ type Model struct {
 	converting   bool
 	converted    bool
 	errorMsg     string
+	filterMode   bool
+	filterText   string
 }
 
 // item represents a theme item in the list
@@ -85,7 +87,7 @@ func initialModel() Model {
 	l := list.New(items, itemDelegate{}, 80, 20)
 	l.Title = "VS Code Themes"
 	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(true)
+	l.SetFilteringEnabled(false) // Disable built-in filtering, we'll handle it ourselves
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
@@ -126,7 +128,49 @@ func (m Model) View() string {
 		return fmt.Sprintf("\n  🔄 Converting '%s' to Warp theme...\n", m.choice)
 	}
 
-	return "\n" + m.list.View()
+	// Build the main view
+	var content strings.Builder
+	content.WriteString("\n")
+	
+	if m.filterMode {
+		// Show filter input when in filter mode
+		content.WriteString("🔍 Filter: ")
+		content.WriteString(m.textInput.View())
+		content.WriteString("\n")
+		content.WriteString(fmt.Sprintf("📝 Found %d matching themes • Press Enter to navigate, Esc to cancel\n\n", len(m.filteredThemes)))
+	} else {
+		// Show filter hint when not in filter mode
+		if m.filterText != "" {
+			content.WriteString(fmt.Sprintf("🔍 Filtered by: \"%s\" (%d results) • Press / to change filter\n\n", m.filterText, len(m.filteredThemes)))
+		} else {
+			content.WriteString("💡 Press / to filter • j/k or ↑/↓ to navigate • Enter to convert\n\n")
+		}
+	}
+	
+	content.WriteString(m.list.View())
+	return content.String()
+}
+
+// filterThemes filters the theme list based on the filter text
+func (m *Model) filterThemes() {
+	if m.filterText == "" {
+		m.filteredThemes = m.themes
+	} else {
+		m.filteredThemes = make([]ThemeInfo, 0)
+		filterLower := strings.ToLower(m.filterText)
+		for _, theme := range m.themes {
+			if strings.Contains(strings.ToLower(theme.DisplayName), filterLower) {
+				m.filteredThemes = append(m.filteredThemes, theme)
+			}
+		}
+	}
+	
+	// Update list items
+	items := make([]list.Item, len(m.filteredThemes))
+	for i, theme := range m.filteredThemes {
+		items[i] = item{theme: theme}
+	}
+	m.list.SetItems(items)
 }
 
 // convertTheme handles the conversion process
@@ -177,35 +221,105 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
-		switch keypress := msg.String(); keypress {
-		case "ctrl+c":
-			m.quitting = true
-			return m, tea.Quit
-
-		case "q":
-			if m.converted || m.errorMsg != "" {
+		// Handle different states
+		if m.converting || m.converted || m.errorMsg != "" {
+			// In conversion or end states, only handle q and ctrl+c
+			switch msg.String() {
+			case "ctrl+c":
+				m.quitting = true
+				return m, tea.Quit
+			case "q":
 				m.quitting = true
 				return m, tea.Quit
 			}
+			return m, nil
+		}
 
-		case "enter":
-			if m.converting || m.converted || m.errorMsg != "" {
+		if m.filterMode {
+			// In filter mode - handle text input
+			switch msg.String() {
+			case "ctrl+c":
+				m.quitting = true
+				return m, tea.Quit
+			case "esc":
+				// Exit filter mode without applying
+				m.filterMode = false
+				m.filterText = ""
+				m.textInput.SetValue("")
+				m.filterThemes()
+				return m, nil
+			case "enter":
+				// Exit filter mode and apply filter
+				m.filterMode = false
+				return m, nil
+			case "backspace":
+				// Handle backspace manually
+				if len(m.filterText) > 0 {
+					m.filterText = m.filterText[:len(m.filterText)-1]
+					m.textInput.SetValue(m.filterText)
+					m.filterThemes()
+				}
+				return m, nil
+			default:
+				// Add character to filter
+				if len(msg.String()) == 1 {
+					m.filterText += msg.String()
+					m.textInput.SetValue(m.filterText)
+					m.filterThemes()
+				}
 				return m, nil
 			}
-
-			i, ok := m.list.SelectedItem().(item)
-			if ok {
-				m.choice = i.theme.DisplayName
-				m.converting = true
-				return m, m.convertTheme(i.theme)
+		} else {
+			// Normal navigation mode
+			switch msg.String() {
+			case "ctrl+c":
+				m.quitting = true
+				return m, tea.Quit
+			case "q":
+				m.quitting = true
+				return m, tea.Quit
+			case "/":
+				// Enter filter mode
+				m.filterMode = true
+				m.textInput.Focus()
+				return m, nil
+			case "enter":
+				// Convert selected theme
+				i, ok := m.list.SelectedItem().(item)
+				if ok {
+					m.choice = i.theme.DisplayName
+					m.converting = true
+					return m, m.convertTheme(i.theme)
+				}
+				return m, nil
+			case "up", "k":
+				// Vim-style up navigation
+				m.list.CursorUp()
+				return m, nil
+			case "down", "j":
+				// Vim-style down navigation
+				m.list.CursorDown()
+				return m, nil
+			case "g":
+				// Go to top (vim-style)
+				m.list.Select(0)
+				return m, nil
+			case "G":
+				// Go to bottom (vim-style)
+				m.list.Select(len(m.list.Items()) - 1)
+				return m, nil
 			}
 		}
 	}
 
-	// Handle list updates
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+	// Handle list updates for other keys (like page up/down)
+	if !m.filterMode {
+		var cmd tea.Cmd
+		m.list, cmd = m.list.Update(msg)
+		return m, cmd
+	}
+
+	return m, nil
 }
 
 // itemDelegate defines how items are rendered in the list
@@ -248,17 +362,25 @@ func main() {
 		fmt.Println()
 		fmt.Println("Instructions:")
 		fmt.Println("  1. Run the command to see all available VS Code themes")
-		fmt.Println("  2. Use arrow keys to navigate the list")
-		fmt.Println("  3. Type to filter themes by name")
-		fmt.Println("  4. Press Enter to convert the selected theme")
-		fmt.Println("  5. The converted theme will be saved to ~/.warp/themes/")
+		fmt.Println("  2. Use arrow keys or vim bindings to navigate")
+		fmt.Println("  3. Press / to filter, type to search, Enter to apply filter")
+		fmt.Println("  4. Navigate filtered results with j/k or arrow keys")
+		fmt.Println("  5. Press Enter to convert the selected theme")
+		fmt.Println("  6. The converted theme will be saved to ~/.warp/themes/")
 		fmt.Println()
 		fmt.Println("Controls:")
-		fmt.Println("  ↑/↓     Navigate themes")
-		fmt.Println("  Enter   Convert selected theme")
-		fmt.Println("  /       Filter themes")
-		fmt.Println("  q       Quit")
-		fmt.Println("  Ctrl+C  Force quit")
+		fmt.Println("  Navigation:")
+		fmt.Println("    ↑/↓, j/k    Navigate themes")
+		fmt.Println("    g           Go to top")
+		fmt.Println("    G           Go to bottom")
+		fmt.Println("  Filtering:")
+		fmt.Println("    /           Enter filter mode")
+		fmt.Println("    Enter       Apply filter and navigate results")
+		fmt.Println("    Esc         Cancel filter")
+		fmt.Println("  Actions:")
+		fmt.Println("    Enter       Convert selected theme")
+		fmt.Println("    q           Quit")
+		fmt.Println("    Ctrl+C      Force quit")
 		return
 	}
 
