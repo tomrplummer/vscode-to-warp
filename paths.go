@@ -44,8 +44,9 @@ func getWarpThemesPath() (string, error) {
 
 	switch runtime.GOOS {
 	case "windows":
-		// Warp is not available on Windows
-		return "", fmt.Errorf("Warp terminal is not available on Windows. This tool only works on macOS and Linux")
+		// Windows: %USERPROFILE%\.warp\themes
+		// Warp on Windows follows the same pattern as Unix systems
+		return filepath.Join(homeDir, ".warp", "themes"), nil
 	case "darwin":
 		// macOS: ~/.warp/themes
 		return filepath.Join(homeDir, ".warp", "themes"), nil
@@ -125,23 +126,8 @@ func hasSuffix(str, suffix string) bool {
 
 // validatePlatformSupport checks if the current platform is supported
 func validatePlatformSupport() error {
-	if runtime.GOOS == "windows" {
-		return fmt.Errorf(`Warp terminal is not available on Windows.
-
-This tool is designed to convert VS Code themes to Warp themes.
-Since Warp only runs on macOS and Linux, this tool cannot be used on Windows.
-
-However, VS Code theme discovery will still work if you want to examine
-your installed themes for other purposes.`)
-	}
+	// All platforms are now supported!
+	// Warp is available on Windows, macOS, and Linux
 	return nil
 }
 
-// getAlternativeTerminalInfo provides information about alternative terminals on Windows
-func getAlternativeTerminalInfo() string {
-	return `Alternative terminals that support custom themes on Windows:
-- Windows Terminal (JSON themes)
-- Alacritty (YAML/TOML themes)
-- Hyper (JavaScript themes)
-- ConEmu (XML themes)`
-}

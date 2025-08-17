@@ -45,9 +45,12 @@ help:
 
 # Build for multiple platforms
 build-all:
+	@echo "Building for all platforms..."
 	GOOS=darwin GOARCH=amd64 go build -o $(BINARY_NAME)-darwin-amd64 .
 	GOOS=darwin GOARCH=arm64 go build -o $(BINARY_NAME)-darwin-arm64 .
 	GOOS=linux GOARCH=amd64 go build -o $(BINARY_NAME)-linux-amd64 .
 	GOOS=windows GOARCH=amd64 go build -o $(BINARY_NAME)-windows-amd64.exe .
+	GOOS=windows GOARCH=arm64 go build -o $(BINARY_NAME)-windows-arm64.exe .
+	@echo "✅ Built binaries for all platforms (Windows, macOS, Linux)"
 
 .PHONY: build install install-user clean run deps help build-all

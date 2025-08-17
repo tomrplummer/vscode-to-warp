@@ -80,25 +80,22 @@ The tool:
 
 ## Platform Support
 
+🎉 **Universal Support**: Warp is now available on all platforms!
+
 | Platform | VS Code Discovery | Warp Installation | Status |
 |----------|------------------|------------------|--------|
+| **Windows** | ✅ | ✅ | Fully supported |
 | **macOS** | ✅ | ✅ | Fully supported |
 | **Linux** | ✅ | ✅ | Fully supported |
-| **Windows** | ✅ | ❌ | Theme discovery only* |
 
-*Warp terminal is not available on Windows, so theme conversion will work but themes cannot be installed.
-
-### Alternative Terminals on Windows
-If you're on Windows, consider these terminals that support custom themes:
-- **Windows Terminal** (JSON themes)
-- **Alacritty** (YAML/TOML themes)
-- **Hyper** (JavaScript themes)
-- **ConEmu** (XML themes)
+### Paths
+- **VS Code themes**: `~/.vscode/extensions/*/themes/*.json` (all platforms)
+- **Warp themes**: `~/.warp/themes/` (all platforms)
 
 ## Requirements
 
 - VS Code installed with theme extensions
-- Warp terminal (macOS/Linux only)
+- Warp terminal (Windows/macOS/Linux)
 - Go 1.21+ (for building from source)
 
 ## Examples
