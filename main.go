@@ -182,8 +182,14 @@ func (m Model) convertTheme(themeInfo ThemeInfo) tea.Cmd {
 			return errorMsg{fmt.Sprintf("Failed to load theme: %v", err)}
 		}
 
+		// Try to load extension metadata for attribution
+		var extensionMetadata *ExtensionMetadata
+		if metadata, err := LoadExtensionMetadata(themeInfo.Path); err == nil {
+			extensionMetadata = metadata
+		}
+
 		// Convert to Warp theme
-		warpTheme, err := ConvertVSCodeToWarp(vscodeTheme)
+		warpTheme, err := ConvertVSCodeToWarp(vscodeTheme, extensionMetadata)
 		if err != nil {
 			return errorMsg{fmt.Sprintf("Failed to convert theme: %v", err)}
 		}
