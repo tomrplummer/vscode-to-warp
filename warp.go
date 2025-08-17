@@ -139,12 +139,10 @@ func cleanColor(color string) string {
 
 // SaveWarpTheme saves a Warp theme to the appropriate directory
 func SaveWarpTheme(theme *WarpTheme, name string) error {
-	homeDir, err := os.UserHomeDir()
+	themesDir, err := getWarpThemesPath()
 	if err != nil {
-		return fmt.Errorf("failed to get home directory: %w", err)
+		return fmt.Errorf("failed to get Warp themes directory: %w", err)
 	}
-
-	themesDir := filepath.Join(homeDir, ".warp", "themes")
 	
 	// Create themes directory if it doesn't exist
 	if err := os.MkdirAll(themesDir, 0755); err != nil {

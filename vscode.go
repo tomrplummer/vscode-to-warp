@@ -34,12 +34,10 @@ type ThemeInfo struct {
 
 // DiscoverVSCodeThemes finds all VS Code themes in the extensions directory
 func DiscoverVSCodeThemes() ([]ThemeInfo, error) {
-	homeDir, err := os.UserHomeDir()
+	extensionsPath, err := getVSCodeExtensionsPath()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get home directory: %w", err)
+		return nil, fmt.Errorf("failed to get VS Code extensions path: %w", err)
 	}
-
-	extensionsPath := filepath.Join(homeDir, ".vscode", "extensions")
 	var themes []ThemeInfo
 
 	// Walk through all extension directories
@@ -54,8 +52,8 @@ func DiscoverVSCodeThemes() ([]ThemeInfo, error) {
 			return nil
 		}
 
-		// Check if this is in a themes directory
-		if !strings.Contains(path, "/themes/") && !strings.Contains(path, "\\themes\\") {
+		// Check if this is in a themes directory (cross-platform)
+		if !isThemesDirectory(path) {
 			return nil
 		}
 

@@ -78,10 +78,27 @@ The tool:
 | `terminal.ansi*` | `terminal_colors.normal.*` |
 | `terminal.ansiBright*` | `terminal_colors.bright.*` |
 
+## Platform Support
+
+| Platform | VS Code Discovery | Warp Installation | Status |
+|----------|------------------|------------------|--------|
+| **macOS** | ✅ | ✅ | Fully supported |
+| **Linux** | ✅ | ✅ | Fully supported |
+| **Windows** | ✅ | ❌ | Theme discovery only* |
+
+*Warp terminal is not available on Windows, so theme conversion will work but themes cannot be installed.
+
+### Alternative Terminals on Windows
+If you're on Windows, consider these terminals that support custom themes:
+- **Windows Terminal** (JSON themes)
+- **Alacritty** (YAML/TOML themes)
+- **Hyper** (JavaScript themes)
+- **ConEmu** (XML themes)
+
 ## Requirements
 
 - VS Code installed with theme extensions
-- Warp terminal
+- Warp terminal (macOS/Linux only)
 - Go 1.21+ (for building from source)
 
 ## Examples

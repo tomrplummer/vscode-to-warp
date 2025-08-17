@@ -60,6 +60,11 @@ func (i item) Description() string {
 
 // initialModel sets up the initial application state
 func initialModel() Model {
+	// Check platform support
+	if err := validatePlatformSupport(); err != nil {
+		log.Fatal(err)
+	}
+	
 	// Discover VS Code themes
 	themes, err := DiscoverVSCodeThemes()
 	if err != nil {
@@ -229,12 +234,21 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 func main() {
 	if len(os.Args) > 1 && (os.Args[1] == "--help" || os.Args[1] == "-h") {
+		os, arch := getPlatformInfo()
 		fmt.Println("VS Code to Warp Theme Converter")
 		fmt.Println("===============================")
+		fmt.Printf("Platform: %s/%s\n", os, arch)
 		fmt.Println()
 		fmt.Println("This CLI tool discovers VS Code themes installed on your system")
 		fmt.Println("and converts them to Warp terminal themes.")
 		fmt.Println()
+		if os == "windows" {
+			fmt.Println("⚠️  Note: Warp terminal is not available on Windows.")
+			fmt.Println("This tool can discover VS Code themes but cannot install Warp themes.")
+			fmt.Println()
+			fmt.Println(getAlternativeTerminalInfo())
+			fmt.Println()
+		}
 		fmt.Println("Usage: vscode-to-warp")
 		fmt.Println()
 		fmt.Println("Instructions:")
@@ -242,7 +256,9 @@ func main() {
 		fmt.Println("  2. Use arrow keys to navigate the list")
 		fmt.Println("  3. Type to filter themes by name")
 		fmt.Println("  4. Press Enter to convert the selected theme")
-		fmt.Println("  5. The converted theme will be saved to ~/.warp/themes/")
+		if os != "windows" {
+			fmt.Println("  5. The converted theme will be saved to ~/.warp/themes/")
+		}
 		fmt.Println()
 		fmt.Println("Controls:")
 		fmt.Println("  ↑/↓     Navigate themes")
