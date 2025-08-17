@@ -1,6 +1,8 @@
 # VS Code to Warp Theme Converter
 
-A CLI tool built with Go and Bubble Tea that discovers VS Code themes on your system and converts them to Warp terminal themes.
+> ✨ **Created entirely by Warp 2.0 AI** - A CLI tool built with Go and Bubble Tea that discovers VS Code themes on your system and converts them to Warp terminal themes.
+
+This project was conceived, designed, and implemented completely by Warp 2.0 AI in a single session, showcasing the capabilities of AI-assisted development for creating fully functional, cross-platform tools.
 
 ## Features
 
@@ -119,3 +121,35 @@ The tool converts themes like:
 **Permission errors**: The tool creates `~/.warp/themes/` if it doesn't exist.
 
 **Colors look off**: Some VS Code themes may not define all terminal colors, so defaults are used.
+
+## About This Project
+
+### 🤖 AI-Generated Development
+
+This entire project was created by **Warp 2.0 AI** in a single collaborative session, demonstrating:
+
+- **Full-stack development**: From concept to deployment
+- **Cross-platform compatibility**: Windows, macOS, and Linux support
+- **Production-ready code**: Complete with error handling, documentation, and CI/CD
+- **Modern tooling**: Go, Bubble Tea, GitHub Actions, and automated releases
+- **Real-world problem solving**: Bridging the gap between VS Code and Warp themes
+
+### 🛠️ What Was Built
+
+- **Architecture design**: Multi-file Go project structure
+- **Cross-platform paths**: Handling different OS filesystem conventions
+- **Interactive UI**: Terminal-based interface with filtering and navigation
+- **Color conversion**: Intelligent mapping between theme formats
+- **Error handling**: Graceful failures and helpful error messages
+- **Documentation**: Comprehensive README with usage examples
+- **CI/CD pipeline**: Automated building and releasing for multiple platforms
+- **Open source setup**: MIT license and contribution-ready repository
+
+The AI handled everything from initial requirements gathering to final deployment, including discovering that Warp had recently launched on Windows and updating the platform support accordingly.
+
+### 💡 Development Highlights
+
+- **Adaptive problem-solving**: Updated Windows support when informed of Warp's availability
+- **Best practices**: Proper Go project structure, error handling, and documentation
+- **User experience**: Intuitive CLI with helpful feedback and platform detection
+- **Maintenance**: Automated releases and clear troubleshooting guides
