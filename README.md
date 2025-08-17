@@ -15,7 +15,7 @@ A CLI tool built with Go and Bubble Tea that discovers VS Code themes on your sy
 ### From Source
 
 ```bash
-git clone <repository>
+git clone https://github.com/tomrplummer/vscode-to-warp.git
 cd vscode-to-warp
 
 # Build only
@@ -30,9 +30,13 @@ make install-user
 make install
 ```
 
-### Binary
+### Binary Releases
 
-Download the latest binary from the releases page.
+Download the latest binary for your platform from the [releases page](https://github.com/tomrplummer/vscode-to-warp/releases):
+
+- **Windows**: `vscode-to-warp-windows-amd64.exe` or `vscode-to-warp-windows-arm64.exe`
+- **macOS**: `vscode-to-warp-darwin-amd64` (Intel) or `vscode-to-warp-darwin-arm64` (Apple Silicon)
+- **Linux**: `vscode-to-warp-linux-amd64`
 
 ## Usage
 

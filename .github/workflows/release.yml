@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+    
+    - name: Build binaries
+      run: |
+        # Build for all platforms
+        GOOS=windows GOARCH=amd64 go build -o vscode-to-warp-windows-amd64.exe .
+        GOOS=windows GOARCH=arm64 go build -o vscode-to-warp-windows-arm64.exe .
+        GOOS=darwin GOARCH=amd64 go build -o vscode-to-warp-darwin-amd64 .
+        GOOS=darwin GOARCH=arm64 go build -o vscode-to-warp-darwin-arm64 .
+        GOOS=linux GOARCH=amd64 go build -o vscode-to-warp-linux-amd64 .
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          vscode-to-warp-windows-amd64.exe
+          vscode-to-warp-windows-arm64.exe
+          vscode-to-warp-darwin-amd64
+          vscode-to-warp-darwin-arm64
+          vscode-to-warp-linux-amd64
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
