@@ -11,11 +11,12 @@ import (
 
 // WarpTheme represents a Warp theme YAML structure
 type WarpTheme struct {
-	Accent     string            `yaml:"accent"`
-	Background string            `yaml:"background"`
-	Details    string            `yaml:"details"`
-	Foreground string            `yaml:"foreground"`
+	Accent         string         `yaml:"accent"`
+	Background     string         `yaml:"background"`
+	Details        string         `yaml:"details"`
+	Foreground     string         `yaml:"foreground"`
 	TerminalColors TerminalColors `yaml:"terminal_colors"`
+	BasedOn        string         `yaml:"based_on,omitempty"`
 }
 
 // TerminalColors represents the terminal color palette
@@ -37,7 +38,7 @@ type ColorPalette struct {
 }
 
 // ConvertVSCodeToWarp converts a VS Code theme to Warp theme format
-func ConvertVSCodeToWarp(vscodeTheme *VSCodeTheme) (*WarpTheme, error) {
+func ConvertVSCodeToWarp(vscodeTheme *VSCodeTheme, extensionMetadata *ExtensionMetadata) (*WarpTheme, error) {
 	warpTheme := &WarpTheme{}
 
 	// Set basic properties
@@ -62,6 +63,9 @@ func ConvertVSCodeToWarp(vscodeTheme *VSCodeTheme) (*WarpTheme, error) {
 	} else {
 		warpTheme.Details = "darker"
 	}
+
+	// Set attribution based on extension metadata
+	warpTheme.BasedOn = FormatBasedOnAttribution(vscodeTheme.Name, extensionMetadata)
 
 	// Convert terminal colors
 	warpTheme.TerminalColors = convertTerminalColors(vscodeTheme.Colors)
@@ -197,4 +201,24 @@ func cleanFilename(name string) string {
 	name = strings.Trim(name, "_")
 	
 	return name
+}
+
+// FormatBasedOnAttribution creates a "based on" attribution string from extension metadata and theme name
+func FormatBasedOnAttribution(themeName string, metadata *ExtensionMetadata) string {
+	if metadata == nil {
+		return fmt.Sprintf("Based on %s", themeName)
+	}
+	
+	// Try different sources for author information
+	var author string
+	if metadata.Author.Name != "" {
+		author = metadata.Author.Name
+	} else if metadata.Publisher != "" {
+		author = metadata.Publisher
+	} else {
+		// Fall back to just the theme name
+		return fmt.Sprintf("Based on %s", themeName)
+	}
+	
+	return fmt.Sprintf("Based on %s by %s", themeName, author)
 }

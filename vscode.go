@@ -24,12 +24,29 @@ type TokenColor struct {
 	Settings map[string]string     `json:"settings"`
 }
 
+// ExtensionMetadata represents VS Code extension package.json metadata
+type ExtensionMetadata struct {
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	Publisher   string `json:"publisher"`
+	Author      struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"author"`
+	Version     string `json:"version"`
+	Repository  struct {
+		Type string `json:"type"`
+		URL  string `json:"url"`
+	} `json:"repository"`
+}
+
 // ThemeInfo holds information about a discoverable theme
 type ThemeInfo struct {
 	Name        string
 	DisplayName string
 	Path        string
 	Type        string // "dark" or "light"
+	ExtensionMetadata *ExtensionMetadata // Optional extension metadata
 }
 
 // DiscoverVSCodeThemes finds all VS Code themes in the extensions directory
@@ -155,3 +172,43 @@ func LoadVSCodeTheme(path string) (*VSCodeTheme, error) {
 
 	return &theme, nil
 }
+
+// LoadExtensionMetadata loads the package.json metadata for an extension from a theme path
+func LoadExtensionMetadata(themePath string) (*ExtensionMetadata, error) {
+	// Find the extension directory from the theme path
+	// Theme path is like: /path/to/.vscode/extensions/author.extension-version/themes/theme.json
+	// We need to go up to the extension directory and look for package.json
+	
+	parts := strings.Split(themePath, string(filepath.Separator))
+	extensionDirIndex := -1
+	
+	// Find the extensions directory
+	for i, part := range parts {
+		if part == "extensions" && i+1 < len(parts) {
+			extensionDirIndex = i + 1
+			break
+		}
+	}
+	
+	if extensionDirIndex == -1 {
+		return nil, fmt.Errorf("could not find extensions directory in path: %s", themePath)
+	}
+	
+	// Build the path to the extension directory
+	extensionDir := strings.Join(parts[:extensionDirIndex+1], string(filepath.Separator))
+	packageJSONPath := filepath.Join(extensionDir, "package.json")
+	
+	// Try to read the package.json file
+	data, err := os.ReadFile(packageJSONPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read package.json: %w", err)
+	}
+	
+	var metadata ExtensionMetadata
+	if err := json.Unmarshal(data, &metadata); err != nil {
+		return nil, fmt.Errorf("failed to parse package.json: %w", err)
+	}
+	
+	return &metadata, nil
+}
+
