@@ -44,18 +44,24 @@ func getWarpThemesPath() (string, error) {
 
 	switch runtime.GOOS {
 	case "windows":
-		// Windows: %USERPROFILE%\.warp\themes
+		// Windows: %USERPROFILE%\.warp\themes\standard
 		// Warp on Windows follows the same pattern as Unix systems
-		return filepath.Join(homeDir, ".warp", "themes"), nil
+		return filepath.Join(homeDir, ".warp", "themes", "standard"), nil
 	case "darwin":
 		// macOS: ~/.warp/themes
 		return filepath.Join(homeDir, ".warp", "themes"), nil
 	case "linux":
-		// Linux: ~/.warp/themes  
-		return filepath.Join(homeDir, ".warp", "themes"), nil
+		// Linux: ${XDG_DATA_HOME:-$HOME/.local/share}/warp-terminal/themes/standard
+		// Check for XDG_DATA_HOME environment variable first
+		xdgDataHome := os.Getenv("XDG_DATA_HOME")
+		if xdgDataHome != "" {
+			return filepath.Join(xdgDataHome, "warp-terminal", "themes", "standard"), nil
+		}
+		// Fallback to default XDG data directory
+		return filepath.Join(homeDir, ".local", "share", "warp-terminal", "themes", "standard"), nil
 	default:
 		// For unknown Unix-like systems, try the standard path
-		return filepath.Join(homeDir, ".warp", "themes"), nil
+		return filepath.Join(homeDir, ".warp", "themes", "standard"), nil
 	}
 }
 
